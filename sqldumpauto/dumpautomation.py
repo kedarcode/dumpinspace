@@ -1,4 +1,6 @@
 import os, os.path, time, sys
+import subprocess
+
 import boto3
 from datetime import datetime
 import shutil
@@ -6,8 +8,8 @@ import shutil
 sqlcred = {
     'HOST': '127.0.0.1',
     'PORT': '3307',
-    'DB_USER': 'root',
-    'DB_PASS': '',
+    'DB_USER': 'test',
+    'DB_PASS': 'test',
     'database': 'pcbudge'}
 
 mongocred = {
@@ -36,9 +38,8 @@ def create_folder_backup():
 
 def get_dump(database, dir):
     filestamp = str(datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
-    os.popen("mysqldump -h %s -P %s -u %s -p%s %s > %s.sql" % (
-        sqlcred['HOST'], sqlcred['PORT'], sqlcred['DB_USER'], sqlcred['DB_PASS'], database[0], dir + "/" +
-        database[0] + "_" + filestamp))
+    command = f'mysqldump -h {sqlcred["HOST"]} -P {sqlcred["PORT"]} -u {sqlcred["DB_USER"]} -p{sqlcred["DB_PASS"]} {sqlcred["database"]} > {os.getcwd() + "/" + dir + "/" + database[0] + "_" + filestamp}.sql '
+    os.popen(command)
 
 
 def get_mongo(database, collection=None, folder=None):
@@ -54,7 +55,6 @@ def get_mongo(database, collection=None, folder=None):
                   f' --username={mongocred["username"]}'\
                   f' --password={mongocred["password"]} --gzip  --out={folder + "/" + database + "_" + filestamp}'
         os.popen(command)
-    print(command)
 
 
 if __name__ == "__main__":
