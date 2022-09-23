@@ -38,9 +38,10 @@ def create_folder_backup():
 
 def get_dump(database, dir):
     filestamp = str(datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
-    command = f'mysqldump -h {sqlcred["HOST"]} -P {sqlcred["PORT"]} -u {sqlcred["DB_USER"]} -p{sqlcred["DB_PASS"]} {sqlcred["database"]} > {os.getcwd() + "/" + dir + "/" + database[0] + "_" + filestamp}.sql '
-    os.popen(command)
-
+    command = f'mysqldump -h {sqlcred["HOST"]} -P {sqlcred["PORT"]} -u {sqlcred["DB_USER"]} -p{sqlcred["DB_PASS"]} "{sqlcred["database"]}" --result-file={os.getcwd() + "/" + dir + "/" + database[0] + "_" + filestamp}.sql'
+    mysql_resp=subprocess.Popen(command)
+    (output, err)=mysql_resp.communicate()
+    status=mysql_resp.wait()
 
 def get_mongo(database, collection=None, folder=None):
     filestamp = str(datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
@@ -49,13 +50,16 @@ def get_mongo(database, collection=None, folder=None):
         command = f'mongodump --host={mongocred["HOST"]} --db={database} '\
                   f'--collection={collection} --username={mongocred["username"]}' +\
                   f' --password={mongocred["password"]} --gzip  --out={folder + "/" + database + "_" + filestamp}'
-        os.popen(command)
+        mongo_resp=subprocess.Popen(command)
+        (output, err) = mongo_resp.communicate()
+        status = mongo_resp.wait()
     else:
         command = f'mongodump --host={mongocred["HOST"]} --db={database} '\
                   f' --username={mongocred["username"]}'\
                   f' --password={mongocred["password"]} --gzip  --out={folder + "/" + database + "_" + filestamp}'
-        os.popen(command)
-
+        mongo_resp=subprocess.Popen(command)
+        (output, err) = mongo_resp.communicate()
+        status = mongo_resp.wait()
 
 if __name__ == "__main__":
     dir = create_folder_backup()
@@ -68,7 +72,7 @@ if __name__ == "__main__":
         get_mongo(mongocred['database'], folder=dir)
     shutil.make_archive(dir, 'zip', dir)
 
-    client.put_object(Bucket='dump',
-                      Key=f'backups/{dir}.zip',
-                      ACL='private',
-                      )
+    # client.put_object(Bucket='dump',
+    #                   Key=f'backups/{dir}.zip',
+    #                   ACL='private',
+    #                   )
