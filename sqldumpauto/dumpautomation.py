@@ -72,7 +72,7 @@ if __name__ == "__main__":
         get_mongo(mongocred['database'], folder=dir)
     shutil.make_archive(dir, 'zip', dir)
 
-    # client.put_object(Bucket='dump',
-    #                   Key=f'backups/{dir}.zip',
-    #                   ACL='private',
-    #                   )
+    client.put_object(Bucket='dump',
+                      Key=f'backups/{dir}.zip',
+                      ACL='private',
+                      )
